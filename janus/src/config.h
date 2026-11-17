@@ -31,7 +31,7 @@ typedef struct {
 
 	char	*acap_dev_name;
 	uint	acap_hz;
-	char	*tc358743_dev_path;
+	char	*acap_v4l2_path;
 
 	char	*aplay_dev_name;
 

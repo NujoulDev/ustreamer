@@ -22,6 +22,7 @@
 
 #include "chip.h"
 
+#include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -50,6 +51,9 @@
 #	define TC358743_CID_LANES_ENOUGH (V4L2_CID_USER_TC358743_BASE + 2)
 #endif
 
+#define RK628_CID_AUDIO_SAMPLING_RATE (V4L2_CID_USER_BASE + 0x1180)
+#define RK628_CID_AUDIO_PRESENT (RK628_CID_AUDIO_SAMPLING_RATE + 1)
+
 
 int us_chip_check_cable(int fd) {
 	struct v4l2_control ctl = {.id = V4L2_CID_DV_RX_POWER_PRESENT};
@@ -67,17 +71,25 @@ int us_chip_tc358743_check_lanes(int fd) {
 	return (ctl.value ? 0 : US_ERROR_NO_LANES);
 }
 
-int us_chip_tc358743_get_audio_hz(int fd) {
+int us_chip_get_audio_hz(int fd) {
+	uint rate_id = TC358743_CID_AUDIO_SAMPLING_RATE;
 	struct v4l2_control ctl = {.id = TC358743_CID_AUDIO_PRESENT};
 	if (us_xioctl(fd, VIDIOC_G_CTRL, &ctl) < 0) {
-		return US_ERROR_COMMON;
+		if (errno != EINVAL && errno != ENOTTY) {
+			return US_ERROR_COMMON;
+		}
+		ctl.id = RK628_CID_AUDIO_PRESENT;
+		if (us_xioctl(fd, VIDIOC_G_CTRL, &ctl) < 0) {
+			return US_ERROR_COMMON;
+		}
+		rate_id = RK628_CID_AUDIO_SAMPLING_RATE;
 	}
 	if (!ctl.value) {
 		return US_ERROR_NO_SIGNAL; // No audio
 	}
 
 	US_MEMSET_ZERO(ctl);
-	ctl.id = TC358743_CID_AUDIO_SAMPLING_RATE;
+	ctl.id = rate_id;
 	if (us_xioctl(fd, VIDIOC_G_CTRL, &ctl) < 0) {
 		return US_ERROR_COMMON;
 	}

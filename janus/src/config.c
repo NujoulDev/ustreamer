@@ -66,9 +66,12 @@ us_config_s *us_config_init(const char *config_dir_path) {
 	config->acap_dev_name = _get_value(jcfg, "acap", "device");
 	if (us_str_is_ok(config->acap_dev_name)) {
 		config->acap_hz = _get_uint(jcfg, "acap", "sampling_rate", 0, 10);
-		config->tc358743_dev_path = _get_value(jcfg, "acap", "tc358743");
-		if (config->acap_hz == 0 && !us_str_is_ok(config->tc358743_dev_path)) {
-			US_LOG_ERROR("Either acap.sampling_rate or acap.tc358743 required");
+		config->acap_v4l2_path = _get_value(jcfg, "acap", "v4l2");
+		if (config->acap_v4l2_path == NULL) {
+			config->acap_v4l2_path = _get_value(jcfg, "acap", "tc358743");
+		}
+		if (config->acap_hz == 0 && !us_str_is_ok(config->acap_v4l2_path)) {
+			US_LOG_ERROR("Either acap.sampling_rate or acap.v4l2 (legacy: acap.tc358743) required");
 			goto error;
 		}
 	}
@@ -93,7 +96,7 @@ ok:
 void us_config_destroy(us_config_s *config) {
 	US_DELETE(config->video_sink_name, free);
 	US_DELETE(config->acap_dev_name, free);
-	US_DELETE(config->tc358743_dev_path, free);
+	US_DELETE(config->acap_v4l2_path, free);
 	US_DELETE(config->aplay_dev_name, free);
 	US_DELETE(config->vplay_sink_name, free);
 	US_DELETE(config->vplay_dev_path, free);

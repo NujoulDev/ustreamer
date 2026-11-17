@@ -26,6 +26,6 @@
 
 
 int us_chip_check_cable(int fd);
+int us_chip_get_audio_hz(int fd);
 
 int us_chip_tc358743_check_lanes(int fd);
-int us_chip_tc358743_get_audio_hz(int fd);

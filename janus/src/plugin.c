@@ -227,14 +227,14 @@ static void *_acap_thread(void *arg) {
 
 		int hz = _g_config->acap_hz;
 		if (hz <= 0) {
-			US_A(us_str_is_ok(_g_config->tc358743_dev_path));
-			chip_fd = open(_g_config->tc358743_dev_path, O_RDWR);
+			US_A(us_str_is_ok(_g_config->acap_v4l2_path));
+			chip_fd = open(_g_config->acap_v4l2_path, O_RDWR);
 			if (chip_fd < 0) {
-				US_ONCE({ US_LOG_PERROR("Can't open TC358743 for the audio request"); });
+				US_ONCE({ US_LOG_PERROR("Can't open V4L2 device '%s' for the audio request", _g_config->acap_v4l2_path); });
 				goto close_acap;
 			}
 
-			hz = us_chip_tc358743_get_audio_hz(chip_fd);
+			hz = us_chip_get_audio_hz(chip_fd);
 			if (hz == US_ERROR_NO_SIGNAL) {
 				US_ONCE({ US_LOG_INFO("No audio presented from the host"); });
 				goto close_acap;
@@ -252,8 +252,16 @@ static void *_acap_thread(void *arg) {
 		once = 0;
 
 		while (!_STOP && _HAS_WATCHERS && _HAS_LISTENERS) {
-			if (chip_fd >= 0 && us_chip_tc358743_get_audio_hz(chip_fd) != (int)acap->pcm_hz) {
-				goto close_acap;
+			if (chip_fd >= 0) {
+				const int hz = us_chip_get_audio_hz(chip_fd);
+				if (hz != (int)acap->pcm_hz) {
+					if (hz > 0) {
+						US_LOG_INFO("HDMI audio sampling rate changed: %u -> %d Hz", acap->pcm_hz, hz);
+					} else {
+						US_LOG_INFO("HDMI audio lost or unavailable; closing capture");
+					}
+					goto close_acap;
+				}
 			}
 			uz size = US_RTP_TOTAL_SIZE - US_RTP_HEADER_SIZE;
 			u8 data[size];
