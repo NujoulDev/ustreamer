@@ -128,6 +128,7 @@ enum _US_OPT_VALUES {
 	ADD_SINK(JPEG_SINK)
 	ADD_SINK(RAW_SINK)
 	ADD_SINK(H264_SINK)
+	_O_H264_ENCODER,
 	_O_H264_BITRATE,
 	_O_H264_GOP,
 	_O_H264_M2M_DEVICE,
@@ -240,6 +241,7 @@ static const struct option _LONG_OPTS[] = {
 	ADD_SINK("h264", H264_SINK)
 #	undef ADD_SINK
 	// Extra opts for H.264
+	{"h264-encoder",			required_argument,	NULL,	_O_H264_ENCODER},
 	{"h264-bitrate",			required_argument,	NULL,	_O_H264_BITRATE},
 	{"h264-gop",				required_argument,	NULL,	_O_H264_GOP},
 	{"h264-m2m-device",			required_argument,	NULL,	_O_H264_M2M_DEVICE},
@@ -522,6 +524,7 @@ int us_options_parse(
 			ADD_SINK("raw", raw_sink, RAW_SINK)
 			ADD_SINK("h264", h264_sink, H264_SINK)
 #			undef ADD_SINK
+			case _O_H264_ENCODER:			OPT_PARSE_ENUM("H264 encoder type", stream->h264_encoder, us_h264_encoder_parse_type, "M2M, CPU");
 			case _O_H264_BITRATE:			OPT_NUMBER("--h264-bitrate", stream->h264_bitrate, 25, 20000, 0);
 			case _O_H264_GOP:				OPT_NUMBER("--h264-gop", stream->h264_gop, 0, 60, 0);
 			case _O_H264_M2M_DEVICE:		OPT_SET(stream->h264_m2m_path, optarg);
@@ -574,6 +577,13 @@ int us_options_parse(
 			default:	return -1;
 		}
 	}
+
+#	ifndef WITH_LIBX264
+	if (stream->h264_encoder == US_H264_ENCODER_TYPE_CPU) {
+		printf("CPU H264 encoding requires building with WITH_LIBX264=1\n");
+		return -1;
+	}
+#	endif
 
 	US_LOG_INFO("Starting PiKVM uStreamer %s ...", US_VERSION);
 
@@ -644,6 +654,12 @@ static int _check_instance_id(const char *str) {
 }
 
 static void _features(void) {
+#	ifdef MK_WITH_LIBX264
+	puts("+ WITH_LIBX264");
+#	else
+	puts("- WITH_LIBX264");
+#	endif
+
 #	ifdef MK_WITH_PYTHON
 	puts("+ WITH_PYTHON");
 #	else
@@ -813,6 +829,7 @@ static void _help(
 	ADD_SINK("RAW", "raw")
 	ADD_SINK("H264", "h264")
 #	undef ADD_SINK
+	SAY("    --h264-encoder <type>  ───────── H264 encoder: M2M or CPU (requires WITH_LIBX264=1). Default: M2M.\n");
 	SAY("    --h264-bitrate <kbps>  ───────── H264 bitrate in Kbps. Default: %u.\n", stream->h264_bitrate);
 	SAY("    --h264-gop <N>  ──────────────── Interval between keyframes. Default: %u.\n", stream->h264_gop);
 	SAY("    --h264-m2m-device </dev/path>  ─ Path to V4L2 M2M encoder device. Default: auto select.\n");

@@ -60,6 +60,14 @@ ifneq ($(MK_WITH_JANUS),)
 override _CFLAGS += -DMK_WITH_JANUS
 endif
 
+ifneq ($(MK_WITH_LIBX264),)
+ifeq ($(shell $(PKG_CONFIG) --exists x264 libswscale libavutil && echo yes),)
+$(error WITH_LIBX264 requires x264, libswscale and libavutil development libraries)
+endif
+override _CFLAGS += -DMK_WITH_LIBX264 -DWITH_LIBX264 $(shell $(PKG_CONFIG) --cflags x264 libswscale libavutil)
+override _USTR_LDFLAGS += $(shell $(PKG_CONFIG) --libs x264 libswscale libavutil)
+endif
+
 ifneq ($(MK_WITH_GPIO),)
 override _CFLAGS += -DMK_WITH_GPIO -DWITH_GPIO $(shell $(PKG_CONFIG) --atleast-version=2 libgpiod 2> /dev/null && echo -DHAVE_GPIOD2)
 override _USTR_LDFLAGS += -lgpiod

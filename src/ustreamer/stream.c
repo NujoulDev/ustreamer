@@ -122,6 +122,7 @@ us_stream_s *us_stream_init(us_capture_s *cap, us_encoder_s *enc) {
 	stream->cap = cap;
 	stream->enc = enc;
 	stream->error_delay = 1;
+	stream->h264_encoder = US_H264_ENCODER_TYPE_M2M;
 	stream->h264_bitrate = 5000; // Kbps
 	stream->h264_gop = 30;
 	stream->run = run;
@@ -157,8 +158,8 @@ void us_stream_loop(us_stream_s *stream) {
 	atomic_store(&run->http->last_req_ts, us_get_now_monotonic());
 
 	if (stream->h264_sink != NULL) {
-		run->h264_enc = us_m2m_h264_encoder_init(
-			"H264",
+		run->h264_enc = us_h264_encoder_init(
+			stream->h264_encoder,
 			stream->h264_m2m_path,
 			stream->h264_bitrate,
 			stream->h264_gop,
@@ -283,7 +284,7 @@ void us_stream_loop(us_stream_s *stream) {
 		}
 	}
 
-	US_DELETE(run->h264_enc, us_m2m_encoder_destroy);
+	US_DELETE(run->h264_enc, us_h264_encoder_destroy);
 	US_DELETE(run->h264_tmp_src, us_frame_destroy);
 	US_DELETE(run->h264_dest, us_frame_destroy);
 }
@@ -439,7 +440,7 @@ static void *_h264_thread(void *v_ctx) {
 			goto decref;
 		}
 
-		uint fps_limit = stream->run->h264_enc->run->fps_limit;
+		uint fps_limit = us_h264_encoder_get_fps_limit(stream->run->h264_enc);
 		if (stream->desired_fps > 0 && (fps_limit == 0 || stream->desired_fps < fps_limit)) {
 			fps_limit = stream->desired_fps;
 		}
@@ -764,7 +765,11 @@ static void _stream_encode_expose_h264(us_stream_s *stream, const us_frame_s *fr
 		run->h264_key_requested = false;
 		force_key = true;
 	}
-	if (!us_m2m_encoder_compress(run->h264_enc, frame, run->h264_dest, force_key)) {
+	uint fps = (stream->cap->run->hz > 0 ? US_MAX(1, lroundf(stream->cap->run->hz)) : 30);
+	if (stream->desired_fps > 0) {
+		fps = US_MIN(fps, stream->desired_fps);
+	}
+	if (!us_h264_encoder_compress(run->h264_enc, frame, run->h264_dest, force_key, fps)) {
 		us_memsink_wants_s wants = {0};
 		meta.online = !us_memsink_server_put(stream->h264_sink, run->h264_dest, &wants);
 		run->h264_key_requested = wants.key;

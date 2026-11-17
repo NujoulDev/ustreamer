@@ -16,6 +16,7 @@ R_DESTDIR = $(if $(DESTDIR),$(shell realpath "$(DESTDIR)"),)
 
 WITH_PYTHON ?= 0
 WITH_JANUS ?= 0
+WITH_LIBX264 ?= 0
 WITH_V4P ?= 0
 WITH_GPIO ?= 0
 WITH_SYSTEMD ?= 0
@@ -28,6 +29,7 @@ $(filter $(shell echo $(1) | tr A-Z a-z), yes on 1)
 endef
 MK_WITH_PYTHON = $(call optbool,$(WITH_PYTHON))
 MK_WITH_JANUS = $(call optbool,$(WITH_JANUS))
+MK_WITH_LIBX264 = $(call optbool,$(WITH_LIBX264))
 MK_WITH_V4P = $(call optbool,$(WITH_V4P))
 MK_WITH_GPIO = $(call optbool,$(WITH_GPIO))
 MK_WITH_SYSTEMD = $(call optbool,$(WITH_SYSTEMD))

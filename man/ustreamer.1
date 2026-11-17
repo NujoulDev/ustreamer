@@ -251,6 +251,12 @@ Client TTL. Default: 10.
 .BR \-\-h264\-sink\-timeout\ \fIsec
 Timeout for lock. Default: 1.
 .TP
+.BR \-\-h264\-encoder\ \fItype
+H264 encoder: M2M (V4L2 hardware encoder) or CPU (libx264 software encoder).
+CPU requires building with \fBWITH_LIBX264=1\fR and the x264, libswscale and libavutil development libraries.
+This option is independent of \fB\-\-encoder\fR, which selects the JPEG encoder.
+Default: M2M.
+.TP
 .BR \-\-h264\-bitrate\ \fIkbps
 H264 bitrate in Kbps. Default: 5000.
 .TP
