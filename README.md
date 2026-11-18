@@ -1,3 +1,71 @@
+# µStreamer for RK628
+
+This fork is based on [pikvm/ustreamer v6.67](https://github.com/pikvm/ustreamer/tree/v6.67). It adds support for HDMI video and audio capture with the [Radxa 4K HDMI IN to MIPI CSI-2 Adapter](https://docs.radxa.com/en/accessories/display/hdmi-in-to-mipi-csi2) (RK628H) in PiKVM setups on Raspberry Pi 4 and Pi 5.
+
+## What's new
+
+- **Software H.264 encoding** using libx264, enabling WebRTC H.264 and Direct H.264 video on the Pi 5.
+- **RK628 audio capture** in the Janus plugin, with automatic detection of the audio sample rate and capture recovery when the rate changes or the signal returns.
+
+The Pi 4 continues to use hardware video encoding. RK628 audio capture is supported on both boards.
+
+## Building
+
+Software H.264 encoding requires the following libraries in addition to the upstream build dependencies:
+
+| Dependency | Purpose |
+| --- | --- |
+| x264 | Software H.264 encoding |
+| libswscale | Pixel format conversion |
+| libavutil | Image buffer allocation and pixel format utilities |
+
+`libswscale` and `libavutil` are part of FFmpeg. The development headers and libraries are required to build, and the corresponding shared libraries must be available at runtime.
+
+Clone the `rk628` branch:
+
+```bash
+git clone --branch rk628 --single-branch https://github.com/Nujoul1/ustreamer.git
+cd ustreamer
+```
+
+Build with software H.264 encoding and Janus support:
+
+```bash
+make clean
+make -j4 WITH_LIBX264=1 WITH_JANUS=1
+```
+
+See the upstream instructions below for other build dependencies and optional features. For PiKVM OS, follow the full build, installation, and configuration steps in [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md) (in Chinese).
+
+## H.264 configuration
+
+| Option | Description |
+| --- | --- |
+| `--h264-encoder=cpu` | Use software H.264 encoding; requires a build with `WITH_LIBX264=1` |
+| `--h264-encoder=m2m` | Use V4L2 M2M hardware encoding (default) |
+| `--h264-sink=<name>` | Set the shared memory name for H.264 output consumed by Janus or kvmd-media |
+
+`--encoder` selects the JPEG encoder. Use `--h264-encoder` to select the H.264 encoder independently.
+
+## Audio configuration
+
+In PiKVM, edit `/etc/kvmd/janus/janus.plugin.ustreamer.jcfg` and replace the existing `acap` block. For example, on the Pi 5:
+
+```text
+acap: {
+    device = "plughw:RK628HDMI,0"
+    v4l2 = "/dev/v4l-subdev2"
+}
+```
+
+`device` selects the ALSA capture device. `v4l2` specifies the device node used to query RK628 audio status and sample rate. On the Pi 5, replace the example path with the RK628 subdevice shown in your media topology. On the Pi 4, use `/dev/kvmd-video`.
+
+Leave `sampling_rate` unset to follow the HDMI source's audio sample rate automatically. The legacy `acap.tc358743` setting is still supported.
+
+For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md) (in Chinese).
+
+---
+
 # µStreamer
 [![CI](https://github.com/pikvm/ustreamer/workflows/CI/badge.svg)](https://github.com/pikvm/ustreamer/actions?query=workflow%3ACI)
 [![Discord](https://img.shields.io/discord/580094191938437144?logo=discord)](https://discord.gg/bpmXfz5)
