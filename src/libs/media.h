@@ -36,7 +36,7 @@ typedef struct {
 
 
 int us_media_find_link(
-	struct media_v2_topology *topology,
+	const struct media_v2_topology *topology,
 	u32 link_type,
 	int source_id,
 	int sink_id,
@@ -47,7 +47,7 @@ int us_media_find_entity_by_name(
 	const char *name);
 
 int us_media_find_entity_by_devnode(
-	struct media_v2_topology *topology,
+	const struct media_v2_topology *topology,
 	const dev_t devnode);
 
 const struct media_v2_pad *us_media_find_pad_by_entity(

@@ -771,8 +771,8 @@ static void _help(
 	SAY("    --m2m-device </dev/path>  ──────────── Path to V4L2 M2M encoder device. Default: auto select.\n");
 	SAY("    --media-device </dev/path>  ────────── Path to V4L2 /dev/media* device for setting subdevices");
 	SAY("                                           (currently necessary for RPi5). Default: unset.\n");
-	SAY("    --media-entity-name <name>  ────────── Name of the V4L2 entity to grab video from,");
-	SAY("                                           will be routed to --device. Default: none.\n");
+	SAY("    --media-entity-name <name|/dev/path>  ─ Source V4L2 entity name or device path, routed to --device.");
+	SAY("                                           Default: %s.\n", cap->media_entity_name);
 	SAY("Image control options:");
 	SAY("══════════════════════");
 	SAY("    --image-default  ────────────────────── Reset all image settings below to default. Default: no change.\n");

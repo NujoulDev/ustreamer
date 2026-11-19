@@ -124,8 +124,8 @@ Path to V4L2 mem-to-mem encoder device. Default: auto-select.
 .BR \-\-media\-device \fI/dev/path
 Path to V4L2 /dev/media* device for setting subdevices (currently necessary for Raspberry Pi 5). Default: unset.
 .TP
-.BR \-\-media\-entity\-name \fIname
-Name of the V4L2 entity to grab video from, will be router to \-\-device, for example "tc358743 10-000f". Default: unset.
+.BR \-\-media\-entity\-name \fIname|/dev/path
+Name or device path of the source V4L2 entity, routed to \-\-device, for example "tc358743 10-000f" or /dev/rk628-subdev. Default: "tc358743 10-000f".
 
 .SS "Image control options"
 .TP

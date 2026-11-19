@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <sys/stat.h>
 #include <sys/sysmacros.h>
 
 #include <linux/videodev2.h>
@@ -44,7 +45,7 @@
 
 
 int us_media_find_link(
-	struct media_v2_topology *topology,
+	const struct media_v2_topology *topology,
 	u32 link_type,
 	int source_id,
 	int sink_id,
@@ -76,6 +77,19 @@ int us_media_find_entity_by_name(
 	const struct media_v2_topology *topology,
 	const char *name
 ) {
+	if (name[0] == '/') {
+		struct stat st = {0};
+		if (stat(name, &st) < 0) {
+			_LOG_PERROR("Can't stat media entity device '%s'", name);
+			return -1;
+		}
+		if (!S_ISCHR(st.st_mode)) {
+			_LOG_ERROR("Media entity device '%s' is not a character device", name);
+			return -1;
+		}
+		return us_media_find_entity_by_devnode(topology, st.st_rdev);
+	}
+
 	const struct media_v2_entity *entities = (struct media_v2_entity *)topology->ptr_entities;
 
 	for (uint i = 0; i < topology->num_entities; ++i) {
@@ -87,14 +101,15 @@ int us_media_find_entity_by_name(
 }
 
 int us_media_find_entity_by_devnode(
-	struct media_v2_topology *topology,
+	const struct media_v2_topology *topology,
 	const dev_t devnode
 ) {
 	const struct media_v2_interface *interfaces = (struct media_v2_interface *)topology->ptr_interfaces;
 
 	for (uint i = 0; i < topology->num_interfaces; ++i) {
 		if (
-			interfaces[i].intf_type == MEDIA_INTF_T_V4L_VIDEO
+			(interfaces[i].intf_type == MEDIA_INTF_T_V4L_VIDEO
+				|| interfaces[i].intf_type == MEDIA_INTF_T_V4L_SUBDEV)
 			&& interfaces[i].devnode.major == major(devnode)
 			&& interfaces[i].devnode.minor == minor(devnode)
 		) {

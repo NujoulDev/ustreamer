@@ -1,11 +1,12 @@
 # µStreamer for RK628
 
-This fork is based on [pikvm/ustreamer v6.67](https://github.com/pikvm/ustreamer/tree/v6.67). It adds support for HDMI video and audio capture with the [Radxa 4K HDMI IN to MIPI CSI-2 Adapter](https://docs.radxa.com/en/accessories/display/hdmi-in-to-mipi-csi2) (RK628H) in PiKVM setups on Raspberry Pi 4 and Pi 5.
+This fork is based on [pikvm/ustreamer v6.67](https://github.com/pikvm/ustreamer/tree/v6.67). It supports video and audio capture with the [Radxa 4K HDMI IN to MIPI CSI-2 Adapter](https://docs.radxa.com/en/accessories/display/hdmi-in-to-mipi-csi2) (RK628H) in PiKVM setups on Raspberry Pi 4 and Pi 5.
 
 ## What's new
 
 - **Software H.264 encoding** using libx264, enabling WebRTC H.264 and Direct H.264 video on the Pi 5.
 - **RK628 audio capture** in the Janus plugin, with automatic detection of the audio sample rate and capture recovery when the rate changes or the signal returns.
+- **Source entity selection by device path**: `--media-entity-name` accepts udev aliases for RK628 subdevices.
 
 The Pi 4 continues to use hardware video encoding. RK628 audio capture is supported on both boards.
 
@@ -35,7 +36,7 @@ make clean
 make -j4 WITH_LIBX264=1 WITH_JANUS=1
 ```
 
-See the upstream instructions below for other build dependencies and optional features. For PiKVM OS, follow the full build, installation, and configuration steps in [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md) (in Chinese).
+See the upstream instructions below for other build dependencies and optional features. For PiKVM OS, follow the full build, installation, and configuration steps in [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md).
 
 ## H.264 configuration
 
@@ -54,15 +55,32 @@ In PiKVM, edit `/etc/kvmd/janus/janus.plugin.ustreamer.jcfg` and replace the exi
 ```text
 acap: {
     device = "plughw:RK628HDMI,0"
-    v4l2 = "/dev/v4l-subdev2"
+    v4l2 = "/dev/rk628-subdev"
 }
 ```
 
-`device` selects the ALSA capture device. `v4l2` specifies the device node used to query RK628 audio status and sample rate. On the Pi 5, replace the example path with the RK628 subdevice shown in your media topology. On the Pi 4, use `/dev/kvmd-video`.
+`device` selects the ALSA capture device. `v4l2` specifies the device node used to query RK628 audio status and sample rate. On the Pi 5, use the `/dev/rk628-subdev` alias provided by the driver. On the Pi 4, keep the official `/dev/kvmd-video` path.
 
 Leave `sampling_rate` unset to follow the HDMI source's audio sample rate automatically. The legacy `acap.tc358743` setting is still supported.
 
-For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md) (in Chinese).
+For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md).
+
+## Pi 5 video capture configuration
+
+After installing the [RK628 driver](https://github.com/Nujoul1/rk628-rpi-driver) and its udev rules, configuring the overlay, and rebooting, start video capture using the stable device aliases:
+
+```bash
+./ustreamer \
+  --device=/dev/rk628-video \
+  --media-device=/dev/rk628-media \
+  --media-entity-name=/dev/rk628-subdev \
+  --dv-timings \
+  --format=uyvy
+```
+
+`--media-entity-name` still accepts a full entity name. It can also take a subdevice path, as shown above.
+
+In PiKVM, add these capture options to `/etc/kvmd/override.yaml`. See the installation guide linked above for the full configuration. The Pi 4 keeps the official `/dev/kvmd-video` path and does not need the two media options above.
 
 ---
 
