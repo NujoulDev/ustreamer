@@ -25,7 +25,7 @@ Software H.264 encoding requires the following libraries in addition to the upst
 Clone the `rk628` branch:
 
 ```bash
-git clone --branch rk628 --single-branch https://github.com/Nujoul1/ustreamer.git
+git clone --branch rk628 --single-branch https://github.com/NujoulDev/ustreamer.git
 cd ustreamer
 ```
 
@@ -36,7 +36,7 @@ make clean
 make -j4 WITH_LIBX264=1 WITH_JANUS=1
 ```
 
-See the upstream instructions below for other build dependencies and optional features. For PiKVM OS, follow the full build, installation, and configuration steps in [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md).
+See the upstream instructions below for other build dependencies and optional features. For PiKVM OS, follow the full build, installation, and configuration steps in [RK628 on PiKVM](https://github.com/NujoulDev/rk628-pikvm).
 
 ## H.264 configuration
 
@@ -63,11 +63,11 @@ acap: {
 
 Leave `sampling_rate` unset to follow the HDMI source's audio sample rate automatically. The legacy `acap.tc358743` setting is still supported.
 
-For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/Nujoul1/rk628-rpi-driver/blob/main/docs/pikvm.md).
+For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/NujoulDev/rk628-pikvm).
 
 ## Pi 5 video capture configuration
 
-After installing the [RK628 driver](https://github.com/Nujoul1/rk628-rpi-driver) and its udev rules, configuring the overlay, and rebooting, start video capture using the stable device aliases:
+After installing the [RK628 driver](https://github.com/NujoulDev/rk628-rpi-driver) and its udev rules, configuring the overlay, and rebooting, start video capture using the stable device aliases:
 
 ```bash
 ./ustreamer \
