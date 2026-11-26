@@ -22,7 +22,9 @@ Software H.264 encoding requires the following libraries in addition to the upst
 
 `libswscale` and `libavutil` are part of FFmpeg. The development headers and libraries are required to build, and the corresponding shared libraries must be available at runtime.
 
-Clone the `rk628` branch:
+To build a released version, download and extract the source archive from the [latest Release](https://github.com/NujoulDev/ustreamer/releases/latest). Run the build commands below from the extracted directory.
+
+To build the development version, clone the `rk628` branch:
 
 ```bash
 git clone --branch rk628 --single-branch https://github.com/NujoulDev/ustreamer.git
@@ -65,9 +67,9 @@ Leave `sampling_rate` unset to follow the HDMI source's audio sample rate automa
 
 For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/NujoulDev/rk628-pikvm).
 
-## Pi 5 video capture configuration
+## Pi 5 standalone capture example
 
-After installing the [RK628 driver](https://github.com/NujoulDev/rk628-rpi-driver) and its udev rules, configuring the overlay, and rebooting, start video capture using the stable device aliases:
+After installing the [RK628 driver](https://github.com/NujoulDev/rk628-rpi-driver) and its udev rules, configuring the overlay, and rebooting, run this command to test capture and view the MJPEG stream:
 
 ```bash
 ./ustreamer \
@@ -80,11 +82,11 @@ After installing the [RK628 driver](https://github.com/NujoulDev/rk628-rpi-drive
 
 `--media-entity-name` still accepts a full entity name. It can also take a subdevice path, as shown above.
 
-In PiKVM, add these capture options to `/etc/kvmd/override.yaml`. See the installation guide linked above for the full configuration. The Pi 4 keeps the official `/dev/kvmd-video` path and does not need the two media options above.
+For WebRTC and Direct H.264, follow the [PiKVM configuration guide](https://github.com/NujoulDev/rk628-pikvm#pikvm-configuration) to set up the H.264 encoder and sink in `/etc/kvmd/override.yaml`. On Pi 4, use `/dev/kvmd-video` for capture.
 
 ---
 
-# µStreamer
+# Upstream µStreamer documentation
 [![CI](https://github.com/pikvm/ustreamer/workflows/CI/badge.svg)](https://github.com/pikvm/ustreamer/actions?query=workflow%3ACI)
 [![Discord](https://img.shields.io/discord/580094191938437144?logo=discord)](https://discord.gg/bpmXfz5)
 
