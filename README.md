@@ -38,7 +38,7 @@ make clean
 make -j4 WITH_LIBX264=1 WITH_JANUS=1
 ```
 
-See the upstream instructions below for other build dependencies and optional features. For PiKVM OS, follow the full build, installation, and configuration steps in [RK628 on PiKVM](https://github.com/NujoulDev/rk628-pikvm).
+See the upstream instructions below for other build dependencies and optional features. For PiKVM OS, follow the full build, installation, and configuration steps in [RK628 on PiKVM](https://github.com/NujoulDev/pikvm-rk628).
 
 ## H.264 configuration
 
@@ -65,7 +65,7 @@ acap: {
 
 Leave `sampling_rate` unset to follow the HDMI source's audio sample rate automatically. The legacy `acap.tc358743` setting is still supported.
 
-For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/NujoulDev/rk628-pikvm).
+For driver installation, device discovery, permissions, and PiKVM setup, see [RK628 on PiKVM](https://github.com/NujoulDev/pikvm-rk628).
 
 ## Pi 5 standalone capture example
 
@@ -82,7 +82,7 @@ After installing the [RK628 driver](https://github.com/NujoulDev/rk628-rpi-drive
 
 `--media-entity-name` still accepts a full entity name. It can also take a subdevice path, as shown above.
 
-For WebRTC and Direct H.264, follow the [PiKVM configuration guide](https://github.com/NujoulDev/rk628-pikvm#pikvm-configuration) to set up the H.264 encoder and sink in `/etc/kvmd/override.yaml`. On Pi 4, use `/dev/kvmd-video` for capture.
+For WebRTC and Direct H.264, follow the [PiKVM configuration guide](https://github.com/NujoulDev/pikvm-rk628#pikvm-configuration) to set up the H.264 encoder and sink in `/etc/kvmd/override.yaml`. On Pi 4, use `/dev/kvmd-video` for capture.
 
 ---
 
